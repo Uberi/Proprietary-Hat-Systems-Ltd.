@@ -36,7 +36,10 @@ def getAngularDisplacement(targetCoord, currentCoord, displacementVector):
     print "Displacement Vector Magnitude: ", displacementVectorMagnitude
     print "Dot Product Result: ", dotProductResult
     return math.acos(dotProductResult / (targetVectorMagnitude * displacementVectorMagnitude))
-    
+
+def set_target(x):
+	target_angle = x
+	
 def get_adjusted_velocity ():
     return k_constant * (current_angle - target_angle)
 
