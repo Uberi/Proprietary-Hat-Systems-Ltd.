@@ -29,3 +29,9 @@ node_modules
 
 #DS_Store
 .DS_Store
+
+#api_key
+apikey.py
+
+#.pyc
+*.pyc
