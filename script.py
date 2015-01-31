@@ -9,6 +9,11 @@ gmaps = googlemaps.Client(key=apikey.key())
 
 departure = "40 Saint George Street Toronto, ON M5S 2E4 Canada"
 destination = "349 College Street Toronto, ON M5T 1S5 Canada"
+k_constant = 0.1
+target_angle = 0; # PLACEHOLDER -the target angle that we want the servo to point at
+current_angle = 0; # PLACEHOLDER - the current best estimate of where the servo is pointing
+current_velocity = 0;
+time_length_of_iteration = 1;
 
 # departure = raw_input("departure: ")
 # destination = raw_input("destination: ")
@@ -31,6 +36,9 @@ def getAngularDisplacement(targetCoord, currentCoord, displacementVector):
     print "Displacement Vector Magnitude: ", displacementVectorMagnitude
     print "Dot Product Result: ", dotProductResult
     return math.acos(dotProductResult / (targetVectorMagnitude * displacementVectorMagnitude))
+    
+def get_adjusted_velocity ():
+    return k_constant * (current_angle - target_angle)
 
 # Android Sensor stuff
 latitude = "initial value"
@@ -46,6 +54,9 @@ location = droid.getLastKnownLocation().result
 
 while True:
  print "~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~\nNew reading: #" + str(time.time) +"\n"
+
+ current_angle += current_velocity * time_length_of_iteration
+ current_velocity = get_adjusted_velocity
 
  droid.startSensingTimed(1,100)
  droid.eventWaitFor("sensors")
