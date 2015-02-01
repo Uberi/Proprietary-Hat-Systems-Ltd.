@@ -9,14 +9,17 @@ gmaps = googlemaps.Client(key=apikey.key())
 
 departure = "40 Saint George Street Toronto, ON M5S 2E4 Canada"
 destination = "349 College Street Toronto, ON M5T 1S5 Canada"
-k_constant = 0.1
-target_angle = 0; # PLACEHOLDER -the target angle that we want the servo to point at
-current_angle = 0; # PLACEHOLDER - the current best estimate of where the servo is pointing
-current_velocity = 0;
-time_length_of_iteration = 1;
-
 # departure = raw_input("departure: ")
 # destination = raw_input("destination: ")
+
+# Variables
+k_constant = 0.1
+target_angle = 0 # PLACEHOLDER -the target angle that we want the servo to point at
+current_angle = 0 # PLACEHOLDER - the current best estimate of where the servo is pointing
+current_velocity = 0
+time_length_of_iteration = 1/10
+geofencing_radius = 10 # In Metres
+current_heading = 0
 
 # Initialize waypoints
 routes = gmaps.directions(departure, destination, mode = "walking")
@@ -25,17 +28,17 @@ waypoints = map(lambda waypoint: waypoint['start_location'], steps)
 waypoints.append(steps[-1]['end_location'])
 
 # Methods
-def getAngularDisplacement(targetCoord, currentCoord, displacementVector):
-    targetVector = [targetCoord[0] - currentCoord[0], targetCoord[1] - currentCoord[1]]
-    dotProductResult = targetVector[0] * displacementVector[0] + targetVector[1] * displacementVector[1]
-    targetVectorMagnitude = math.sqrt(targetVector[0] ** 2 + targetVector[1] ** 2)
-    displacementVectorMagnitude = math.sqrt(displacementVector[0] ** 2 + displacementVector[1] ** 2)
-    print "Target Vector: ", targetVector
-    print "Target Vector Magnitude: ", targetVectorMagnitude
-    print "Displacement Vector: ", displacementVector
-    print "Displacement Vector Magnitude: ", displacementVectorMagnitude
-    print "Dot Product Result: ", dotProductResult
-    return math.acos(dotProductResult / (targetVectorMagnitude * displacementVectorMagnitude))
+def get_angular_displacement(target_coord, current_coord, displacement_vector):
+    target_vector = [target_coord[0] - current_coord[0], target_coord[1] - current_coord[1]]
+    dot_product_result = target_vector[0] * displacement_vector[0] + target_vector[1] * displacement_vector[1]
+    target_vector_magnitude = math.sqrt(target_vector[0] ** 2 + target_vector[1] ** 2)
+    displacement_vector_magnitude = math.sqrt(displacement_vector[0] ** 2 + displacement_vector[1] ** 2)
+    print "Target Vector: ", target_vector
+    print "Target Vector Magnitude: ", target_vector_magnitude
+    print "Displacement Vector: ", displacement_vector
+    print "Displacement Vector Magnitude: ", displacement_vector_magnitude
+    print "Dot Product Result: ", dot_product_result
+    return math.acos(dot_product_result / (target_vector_magnitude * displacement_vector_magnitude))
 
 def set_target(x):
 	target_angle = x
@@ -55,17 +58,23 @@ location = droid.readLocation().result
 droid.stopLocating()
 location = droid.getLastKnownLocation().result
 
+# Main Program Loop
 while True:
- print "~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~\nNew reading: #" + str(time.time) +"\n"
-
- current_angle += current_velocity * time_length_of_iteration
- current_velocity = get_adjusted_velocity
-
+ print "~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~\nNew reading: #" + str(time.time()) +"\n"
+ 
+ # Heading calculations
+ last_heading = current_heading
  droid.startSensingTimed(1,100)
  droid.eventWaitFor("sensors")
- heading = droid.sensorsReadOrientation().result[0]
- print heading
+ current_heading = droid.sensorsReadOrientation().result[0]
+ print "Heading: ", current_heading
 
+ # Current Heading calculations
+ current_angle += current_heading - last_heading + current_velocity * time_length_of_iteration
+ current_velocity = get_adjusted_velocity()
+
+ print "Current Angle: ", current_angle
+ print "Current Velocity: ", current_velocity
  # IGNORE THIS SHIT FOR NOW BOYS
  # if location != {}:
  #  if location['gps'] == None:
@@ -89,13 +98,13 @@ while True:
  #    print str(locInfo)
  # print "\n"
 
- now = datetime.datetime.now()
- ora = now.hour
- minut = now.minute
- secunda = now.second
- ziua = now.day
- luna = now.month
- an = now.year
- print str(ora)+":"+str(minut)+":"+str(secunda)+" / "+str(ziua)+"-"+str(luna)+"-"+str(an)
+ # now = datetime.datetime.now()
+ # ora = now.hour
+ # minut = now.minute
+ # secunda = now.second
+ # ziua = now.day
+ # luna = now.month
+ # an = now.year
+ # print str(ora)+":"+str(minut)+":"+str(secunda)+" / "+str(ziua)+"-"+str(luna)+"-"+str(an)
 
- time.sleep(1/1000)
+ time.sleep(1/10)
