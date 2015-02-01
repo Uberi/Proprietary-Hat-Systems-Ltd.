@@ -17,9 +17,9 @@ k_constant = 0.1
 target_angle = 0 # PLACEHOLDER -the target angle that we want the servo to point at
 current_angle = 0 # PLACEHOLDER - the current best estimate of where the servo is pointing
 current_velocity = 0
-time_length_of_iteration = 1/10
+time_length_of_iteration = 1/2
 geofencing_radius = 10 # In Metres
-current_heading = 0
+last_heading = 0
 
 # Initialize waypoints
 routes = gmaps.directions(departure, destination, mode = "walking")
@@ -58,53 +58,60 @@ location = droid.readLocation().result
 droid.stopLocating()
 location = droid.getLastKnownLocation().result
 
+previous_time = time.time()
+
 # Main Program Loop
 while True:
- print "~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~\nNew reading: #" + str(time.time()) +"\n"
- 
- # Heading calculations
- last_heading = current_heading
- droid.startSensingTimed(1,100)
- droid.eventWaitFor("sensors")
- current_heading = droid.sensorsReadOrientation().result[0]
- print "Heading: ", current_heading
+    current_time = time.time()
+    print "~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~\nNew reading: #" + str(current_time) +"\n"
 
- # Current Heading calculations
- current_angle += current_heading - last_heading + current_velocity * time_length_of_iteration
- current_velocity = get_adjusted_velocity()
+    # Heading calculations
+    droid.startSensingTimed(1,100)
+    droid.eventWaitFor("sensors")
+    current_heading = droid.sensorsReadOrientation().result[0]
 
- print "Current Angle: ", current_angle
- print "Current Velocity: ", current_velocity
- # IGNORE THIS SHIT FOR NOW BOYS
- # if location != {}:
- #  if location['gps'] == None:
- #   if location['network'] == {}:
- #    latitude = str(location['passive']['latitude'])
- #    longitude = str(location['passive']['longitude'])
- #    print "Reading passive data (from last known location):"
- #    print longitude
- #    print latitude
- #    lostSignal = True
- #   elif location['network'] != {}:
- #    latitude = str(location['network']['latitude'])
- #    longitude = str(location['network']['longitude'])
- #    print "Reading data from network:"
- #    print latitude
- #    print longitude
- #    lostSignal = True
+    # Current Heading calculations
+    current_angle += current_heading - last_heading# + current_velocity * (current_time - previous_time)
+    #current_velocity = get_adjusted_velocity()
 
- # print "\nFull available information:\n"
- # for locInfo in location.iteritems():
- #    print str(locInfo)
- # print "\n"
+    print "Current Angle: ", current_angle
+    print "Current Heading: ", current_heading
+    print "Current Velocity: ", current_velocity
+    print "Last Heading: ", last_heading
+    print "Delta Time: ", current_time - previous_time
+    # IGNORE THIS SHIT FOR NOW BOYS
+    # if location != {}:
+    #  if location['gps'] == None:
+    #   if location['network'] == {}:
+    #    latitude = str(location['passive']['latitude'])
+    #    longitude = str(location['passive']['longitude'])
+    #    print "Reading passive data (from last known location):"
+    #    print longitude
+    #    print latitude
+    #    lostSignal = True
+    #   elif location['network'] != {}:
+    #    latitude = str(location['network']['latitude'])
+    #    longitude = str(location['network']['longitude'])
+    #    print "Reading data from network:"
+    #    print latitude
+    #    print longitude
+    #    lostSignal = True
 
- # now = datetime.datetime.now()
- # ora = now.hour
- # minut = now.minute
- # secunda = now.second
- # ziua = now.day
- # luna = now.month
- # an = now.year
- # print str(ora)+":"+str(minut)+":"+str(secunda)+" / "+str(ziua)+"-"+str(luna)+"-"+str(an)
+    # print "\nFull available information:\n"
+    # for locInfo in location.iteritems():
+    #    print str(locInfo)
+    # print "\n"
 
- time.sleep(1/10)
+    # now = datetime.datetime.now()
+    # ora = now.hour
+    # minut = now.minute
+    # secunda = now.second
+    # ziua = now.day
+    # luna = now.month
+    # an = now.year
+    # print str(ora)+":"+str(minut)+":"+str(secunda)+" / "+str(ziua)+"-"+str(luna)+"-"+str(an)
+
+    previous_time = current_time
+    last_heading = current_heading
+
+    time.sleep(time_length_of_iteration)
