@@ -14,10 +14,10 @@ destination = "349 College Street Toronto, ON M5T 1S5 Canada"
 
 # Variables
 k_constant = 0.1
-target_angle = 0 # PLACEHOLDER -the target angle that we want the servo to point at
+target_angle = -2 # PLACEHOLDER -the target angle that we want the servo to point at
 current_angle = 0 # PLACEHOLDER - the current best estimate of where the servo is pointing
 current_velocity = 0
-time_length_of_iteration = 1/2
+time_length_of_iteration = 1/10
 geofencing_radius = 10 # In Metres
 last_heading = 0
 
@@ -44,7 +44,7 @@ def set_target(x):
 	target_angle = x
 	
 def get_adjusted_velocity ():
-    return k_constant * (current_angle - target_angle)
+    return k_constant * (target_angle - current_angle)
 
 # Android Sensor stuff
 latitude = "initial value"
@@ -52,11 +52,11 @@ longitude = "initial value"
 indexVal = 1
 lostSignal = False
 
-droid.startLocating()
-droid.eventWaitFor("location")
-location = droid.readLocation().result
-droid.stopLocating()
-location = droid.getLastKnownLocation().result
+# droid.startLocating()
+# droid.eventWaitFor("location")
+# location = droid.readLocation().result
+# droid.stopLocating()
+# location = droid.getLastKnownLocation().result
 
 previous_time = time.time()
 
@@ -71,8 +71,8 @@ while True:
     current_heading = droid.sensorsReadOrientation().result[0]
 
     # Current Heading calculations
-    current_angle += current_heading - last_heading# + current_velocity * (current_time - previous_time)
-    #current_velocity = get_adjusted_velocity()
+    current_angle += current_heading - last_heading + current_velocity * (current_time - previous_time)
+    current_velocity = get_adjusted_velocity()
 
     print "Current Angle: ", current_angle
     print "Current Heading: ", current_heading
@@ -102,14 +102,14 @@ while True:
     #    print str(locInfo)
     # print "\n"
 
-    # now = datetime.datetime.now()
-    # ora = now.hour
-    # minut = now.minute
-    # secunda = now.second
-    # ziua = now.day
-    # luna = now.month
-    # an = now.year
-    # print str(ora)+":"+str(minut)+":"+str(secunda)+" / "+str(ziua)+"-"+str(luna)+"-"+str(an)
+    now = datetime.datetime.now()
+    ora = now.hour
+    minut = now.minute
+    secunda = now.second
+    ziua = now.day
+    luna = now.month
+    an = now.year
+    print str(ora)+":"+str(minut)+":"+str(secunda)+" / "+str(ziua)+"-"+str(luna)+"-"+str(an)
 
     previous_time = current_time
     last_heading = current_heading
